@@ -4,8 +4,28 @@ import time
 import random
 from PDFProcessor import PaperFetcher
 from PDFProcessor import PaperProcessor
+from PDFProcessor import DocumentClusterer
 from PDFProcessor import KnowledgeGraph
 
+def clusterTest():
+    # Sample text data (list of documents)
+    texts = [
+        "Machine learning is a subset of artificial intelligence.",
+        "Artificial intelligence includes subfields like machine learning and deep learning.",
+        "The quick brown fox jumps over the lazy dog.",
+        "Python is a popular programming language for data science.",
+        "Data science involves the use of statistical methods and machine learning techniques."
+    ]
+    
+    # Create an instance of DocumentClusterer
+    clusterer = DocumentClusterer()
+
+    # Perform clustering and visualization
+    n_clusters = 2  # Set the number of clusters
+    clusterer.cluster_and_visualize(texts, n_clusters)
+
+
+clusterTest()
 # processor = PaperProcessor()
 # # # Create save directory
 # # save_dir = r"C:\Users\srika\.vscode\PaperProcessor\SamplePapers"
@@ -46,16 +66,16 @@ from PDFProcessor import KnowledgeGraph
 # processor.save_knowledge_graph(r"C:\Users\srika\.vscode\PaperProcessor\knowledge_graph.pkl")
 
 
-new_processor = PaperProcessor()
+# new_processor = PaperProcessor()
 
-# Load the saved knowledge graph
-new_processor.load_knowledge_graph(r"C:\Users\srika\.vscode\PaperProcessor\knowledge_graph.pkl")
+# # Load the saved knowledge graph
+# new_processor.load_knowledge_graph(r"C:\Users\srika\.vscode\PaperProcessor\knowledge_graph.pkl")
 
-# Check if the nodes loaded correctly
-# print("Loaded Knowledge Graph Nodes:", new_processor.knowledge_graph.graph.nodes(data=True))
+# # Check if the nodes loaded correctly
+# # print("Loaded Knowledge Graph Nodes:", new_processor.knowledge_graph.graph.nodes(data=True))
 
-# Re-run any functions on the loaded graph to verify it works
-new_processor.knowledge_graph.visualize()    
+# # Re-run any functions on the loaded graph to verify it works
+# new_processor.knowledge_graph.visualize()    
 
 
 # # Search query

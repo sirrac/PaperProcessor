@@ -26,6 +26,7 @@ class PaperProcessor:
         self.summarizer = T5ForConditionalGeneration.from_pretrained("t5-small")
         self.summarizer_tokenizer = T5Tokenizer.from_pretrained("t5-small")
         self.knowledge_graph = KnowledgeGraph()
+        self.document_clusterer = DocumentClusterer()
 
         if knowledge_graph_path:
             self.knowledge_graph = self.load_knowledge_graph(knowledge_graph_path)
@@ -69,45 +70,9 @@ class PaperProcessor:
 
         # Generate and print summary
         summary = self.summarize_text(text)
+        self.document_clusterer.add_summary(summary)
         print(f"Summary for {title}: {summary}")
-    
-    # def identify_sections(self, text, pdf_path=None):
-    #     # Using regex patterns for common section headers
-    #     section_patterns = {
-    #         'abstract': r'abstract.*?\n',
-    #         'introduction': r'introduction.*?\n',
-    #         'methodology': r'(methodology|methods).*?\n',
-    #         'results': r'results.*?\n',
-    #         'discussion': r'discussion.*?\n',
-    #         'conclusion': r'conclusion.*?\n',
-            
-    #     }
 
-    #     sections = {}
-        
-    #     for name, pattern in section_patterns.items():
-    #         match = re.search(pattern, text, re.IGNORECASE)
-    #         if match:
-    #             start = match.end()
-    #             next_section = re.search(r'\n[A-Z ]+\n', text[start:], re.IGNORECASE)
-    #             end = start + (next_section.start() if next_section else len(text))
-    #             sections[name] = text[start:end].strip()
-
-        
-
-    #     unmatched_text = text
-    #     for content in sections.values():
-    #         unmatched_text = unmatched_text.replace(content, "")  # Remove already identified sections
-
-    #     generic_matches = re.finditer(r'\n[A-Z][A-Za-z0-9\-: ]{3,}\n', unmatched_text)
-    #     for match in generic_matches:
-    #         start = match.end()
-    #         next_section = re.search(r'\n[A-Z][A-Za-z0-9\-: ]{3,}\n', unmatched_text[start:])
-    #         end = start + (next_section.start() if next_section else len(unmatched_text))
-    #         header = match.group().strip()
-    #         sections[header] = unmatched_text[start:end].strip()
-
-    #     return sections
     
     def summarize_text(self, text, max_length=50):
         """Generates a summary of the text with a max_length limit."""
@@ -322,6 +287,15 @@ class DocumentClusterer:
         for i, text in enumerate(texts):
             print(f"Text: {text[:100]}... -> Cluster: {clusters[i]}")  # Only show first 100 characters for brevity
 
+
+
+
+
+
+
+
+
+            
     # def get_embeddings(self, text_list):
     #     embeddings = []
     #     print(len(text_list))
