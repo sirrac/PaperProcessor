@@ -26,13 +26,15 @@ def clusterTest():
 
 
 clusterTest()
-# processor = PaperProcessor()
-# # # Create save directory
-# # save_dir = r"C:\Users\srika\.vscode\PaperProcessor\SamplePapers"
-# # os.makedirs(save_dir, exist_ok=True)
+processor = PaperProcessor()
+# # Create save directory
+# save_dir = r"C:\Users\srika\.vscode\PaperProcessor\SamplePapers"
+# os.makedirs(save_dir, exist_ok=True)
 
-# # # List of paper paths
-# # fetcher = PaperFetcher()
+# # List of paper paths
+fetcher = PaperFetcher()
+
+fetcher.fetch_from_arxiv("quantum physics")
 
 # pdf_folder = r"C:\Users\srika\.vscode\PaperProcessor\SamplePapers"
 # pdf_paths = [os.path.join(pdf_folder, filename) for filename in os.listdir(pdf_folder) if filename.endswith('.pdf')]

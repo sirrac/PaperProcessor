@@ -14,6 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from sentence_transformers import SentenceTransformer
 import requests
 import pickle
+import arxiv
 
 #Due to 403 error request, we cannot mass download PDFs. We can however mass extract abstracts. Hence, two functionalities aimed are
 #Large knowledge graph with abstracts
@@ -40,23 +41,7 @@ class PaperProcessor:
         doc = fitz.open(pdf_path)
         return "\n".join([page.get_text() for page in doc])
 
-    # def extract_bold_headers(pdf_path):
-    #     doc = fitz.open(pdf_path)
-    #     bold_headers = []
-
-    #     for page_num in range(len(doc)):
-    #         page = doc.load_page(page_num)
-    #         text_instances = page.extract_text("dict")  # Extract text in dictionary format
-            
-    #         # Loop through text instances
-    #         for block in text_instances["blocks"]:
-    #             for line in block["lines"]:
-    #                 for span in line["spans"]:
-    #                     # Check if the span's font is bold
-    #                     if "bold" in span["font"].lower():  # Check for the word "bold" in the font name
-    #                         bold_headers.append(span["text"])
-
-    #     return bold_headers
+    
 
     def process_paper(self, paper_id, pdf_path):
         # Extract text and sections from the paper
@@ -223,6 +208,17 @@ class PaperFetcher:
         print(response.json())
         return response.json()
 
+    def fetch_from_arxiv(self, query):
+        search = arxiv.Search(
+            query=query,
+            max_results=10,
+            sort_by=arxiv.SortCriterion.Relevance
+        )
+        
+        for result in search.results():
+            print(f"Downloading {result.title}...")
+            result.download_pdf(dirpath="./SamplePapers", filename=f"{result.entry_id.split('/')[-1]}.pdf")
+
 
 class DocumentClusterer:
     def __init__(self, model_name='distilbert-base-nli-stsb-mean-tokens'):
@@ -294,207 +290,3 @@ class DocumentClusterer:
 
 
 
-
-            
-    # def get_embeddings(self, text_list):
-    #     embeddings = []
-    #     print(len(text_list))
-    #     for text in text_list:
-    #         print(f"Processing text: {text[:50]}...")  # Print first 50 characters of each text
-    #         tokens = self.tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=512)
-    #         print(f"Tokenized input: {tokens}")
-
-    #         with torch.no_grad():
-    #             outputs = self.model(**tokens)
-    #         # Check output shape
-    #         print(f"Output shape: {outputs.last_hidden_state.shape}")
-    #         embeddings.append(outputs.last_hidden_state[:, 0, :].squeeze().numpy())
-    #     print(f"Generated {len(embeddings)} embeddings.")
-    #     return embeddings
-
-        # def cluster_texts(self, texts, n_clusters):
-        #     """
-        #     Performs KMeans clustering on a list of texts.
-        #     """
-        #     # Generate embeddings
-        #     embeddings = self.get_embeddings(texts)
-
-        #     # Apply KMeans
-        #     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-        #     clusters = kmeans.fit_predict(embeddings)
-
-        #     return clusters, embeddings
-
-        # def visualize_clusters(self, embeddings, clusters):
-        #     """
-        #     Visualizes clusters using PCA.
-        #     """
-        #     # Reduce dimensions with PCA
-        #     pca = PCA(n_components=2)
-        #     reduced_embeddings = pca.fit_transform(embeddings)
-
-        #     # Plot
-        #     plt.scatter(reduced_embeddings[:, 0], reduced_embeddings[:, 1], c=clusters, cmap='viridis')
-        #     plt.title("KMeans Clustering")
-        #     plt.show()
-
-
-        # def cluster_and_visualize(self, texts, n_clusters):
-        #     """
-        #     High-level method to cluster texts and visualize the results.
-        #     """
-        #     clusters, embeddings = self.cluster_texts(texts, n_clusters)
-        #     self.visualize_clusters(embeddings, clusters)
-
-        #     # Print results
-        #     for i, text in enumerate(texts):
-        #         print(f"Text: {text} -> Cluster: {clusters[i]}")
-#
-
-# # 2. Content Analysis
-# class ContentAnalyzer:
-#     def __init__(self):
-#         self.bert_model = AutoModel.from_pretrained('bert-base-scibert')
-        
-#     def extract_technical_terms(self, text):
-#         # Use NER and custom rules for technical term identification
-#         pass
-        
-#     def analyze_citations(self, text):
-#         # Extract and analyze citation patterns
-#         citation_pattern = r'\[(.*?)\]'
-#         citations = re.findall(citation_pattern, text)
-#         return citations
-
-# # 3. Knowledge Graph Creation
-# import networkx as nx
-
-
-
-# 4. Study Aid Generation
-# from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-
-# class SmartSummarizer:
-#     def __init__(self):
-#         # Initialize a summarization pipeline
-#         self.summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-
-#     def generate_summary(self, text, max_length=400, min_length=30):
-#         """
-#         Generates a smart summary for the given text.
-#         """
-#         try:
-#             if len(text.split()) > 1024:
-#                 print("Text is too long. Splitting into chunks.")
-
-#                 chunks = self.split_text_into_chunks(text, chunk_size=1024)
-#                 summaries = []
-                
-#                 for chunk in chunks:
-#                     chunk_text = " ".join(chunk)
-#                     summary = self.summarizer(
-#                         chunk_text, max_length=max_length, min_length=min_length, truncation=True
-#                     )
-#                     summaries.append(summary[0]['summary_text'])
-                
-#                 return " ".join(summaries)
-
-#         except Exception as e:
-#             print(f"Failed to generate summary: {e}")
-#             return "Summary could not be generated."
-        
-#         # If the text is small enough, summarize directly
-#         summary = self.summarizer(
-#             text, max_length=max_length, min_length=min_length, truncation=True
-#         )
-#         return summary[0]['summary_text']
-
-#     def split_text_into_chunks(self, text, chunk_size=1024):
-#         """
-#         Splits the text into chunks of a specific token size.
-#         """
-#         tokens = self.summarizer.tokenizer.tokenize(text)
-#         token_chunks = [tokens[i:i + chunk_size] for i in range(0, len(tokens), chunk_size)]
-#         return [self.summarizer.tokenizer.convert_tokens_to_string(chunk) for chunk in token_chunks]
-
-        
-# class StudyAidGenerator:
-#     def __init__(self):
-#         self.model = GPT2LMHeadModel.from_pretrained('gpt2')
-#         self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-        
-#     def generate_flashcards(self, text):
-#         # Extract key concepts and definitions
-#         terms = self.extract_technical_terms(text)
-#         flashcards = []
-#         for term in terms:
-#             definition = self.find_definition(term, text)
-#             flashcards.append({"term": term, "definition": definition})
-#         return flashcards
-
-# class MathHandler:
-#     def __init__(self):
-#         self.latex_patterns = {
-#             'inline': r'\$(.*?)\$',
-#             'display': r'\$\$(.*?)\$\$',
-#             'equation': r'\\begin{equation}(.*?)\\end{equation}'
-#         }
-        
-#     def extract_formulas(self, text):
-#         formulas = []
-#         for pattern_type, pattern in self.latex_patterns.items():
-#             matches = re.findall(pattern, text, re.DOTALL)
-#             formulas.extend([{
-#                 'type': pattern_type,
-#                 'content': match,
-#                 'simplified': self.simplify_formula(match)
-#             } for match in matches])
-#         return formulas
-    
-#     def simplify_formula(self, formula):
-#         """Convert complex LaTeX to simplified form for ML processing"""
-#         # Remove formatting commands
-#         simplified = re.sub(r'\\[a-zA-Z]+{([^}]*)}', r'\1', formula)
-#         # Convert subscripts/superscripts
-#         simplified = re.sub(r'_([^\s{])|_{([^}]*)}', r'_\1\2', simplified)
-#         return simplified
-
-# class IntegratedPaperAnalyzer:
-#     def __init__(self):
-#         # Initialize components
-#         self.preprocessor = PaperPreprocessor()
-#         self.math_handler = MathHandler()
-#         self.bert_model = AutoModel.from_pretrained('allenai/scibert')
-#         self.classifier = torch.nn.Linear(768, num_classes)  # BERT output size
-        
-#     def analyze_paper(self, pdf_path):
-#         # 1. Extract and preprocess text
-#         text = self.extract_text(pdf_path)
-#         processed = self.preprocessor.process_paper(text)
-        
-#         # 2. Process mathematical content
-#         math_content = self.math_handler.extract_formulas(text)
-        
-#         # 3. Generate embeddings
-#         embeddings = self.generate_embeddings(processed['clean_text'])
-        
-#         # 4. Classify sections and topics
-#         classifications = self.classify_content(embeddings)
-        
-#         # 5. Create knowledge graph
-#         graph = self.build_knowledge_graph(processed, embeddings)
-        
-#         return {
-#             'processed_text': processed,
-#             'math_content': math_content,
-#             'embeddings': embeddings,
-#             'classifications': classifications,
-#             'knowledge_graph': graph
-#         }
-    
-#     def generate_embeddings(self, text):
-#         tokens = self.tokenizer(text, return_tensors='pt', padding=True)
-#         with torch.no_grad():
-#             outputs = self.bert_model(**tokens)
-#         return outputs.last_hidden_state
